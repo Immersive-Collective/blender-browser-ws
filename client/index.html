@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>WebSocket Client</title>
+    <style>
+        .status {
+            padding: 5px;
+            border: 1px solid black;
+            width: 200px;
+        }
+        .connected {
+            background-color: #90EE90; /* light green */
+        }
+        .disconnected {
+            background-color: #FFC0CB; /* light pink */
+        }
+    </style>
+</head>
+<body>
+    <h1>WebSocket Client</h1>
+
+    <div id="statusDiv" class="status disconnected">
+        Status: Disconnected
+    </div>
+    <br>
+    <button id="rotateButton">Rotate Object</button>
+
+    <!-- Add this below the rotateButton in your HTML -->
+    <div id="logArea">Operations Log:</div>
+
+    <script>
+        const rotateButton = document.getElementById('rotateButton');
+        const statusDiv = document.getElementById('statusDiv');
+
+        // WebSocket connection to the server
+        const socket = new WebSocket('ws://localhost:8765');
+
+        function updateStatus(message, isConnected) {
+            statusDiv.textContent = "Status: " + message;
+            if (isConnected) {
+                statusDiv.classList.remove('disconnected');
+                statusDiv.classList.add('connected');
+            } else {
+                statusDiv.classList.remove('connected');
+                statusDiv.classList.add('disconnected');
+            }
+        }
+
+        // Event listener for when the connection is established
+        socket.addEventListener('open', (event) => {
+            console.log('WebSocket connection established');
+            updateStatus('Connected', true);
+        });
+
+        // Event listener for when a message is received from the server
+        socket.addEventListener('message', (event) => {
+            console.log('Received message from server:', event.data);
+            const logArea = document.getElementById('logArea');
+            logArea.textContent += '\n' + event.data;
+        });
+
+
+        // Event listener for any errors that occur
+        socket.addEventListener('error', (error) => {
+            console.error('WebSocket error:', error);
+            updateStatus('Error encountered', false);
+        });
+
+        // Event listener for when the connection is closed
+        socket.addEventListener('close', (event) => {
+            console.log('WebSocket connection closed:', event.reason);
+            updateStatus('Disconnected', false);
+        });
+
+        // Function to send a message to the server
+        function sendMessage(message) {
+            socket.send(message);
+            console.log('Sent message to server:', message);
+        }
+
+        // Button click event to send the "rotate" message
+        rotateButton.addEventListener('click', () => {
+            sendMessage('rotate');
+        });
+
+
+
+
+    </script>
+</body>
+</html>
